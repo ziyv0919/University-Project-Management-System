@@ -1,0 +1,23 @@
+.menu-container {
+	height: 100%;
+
+	:deep(.el-menu) {
+		border: none;
+	}
+
+	.title {
+		text-align: center;
+	}
+
+	.menu-expand-collapse {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 50px;
+		cursor: pointer;
+
+		:deep(.el-icon) {
+			font-size: 20px;
+		}
+	}
+}
