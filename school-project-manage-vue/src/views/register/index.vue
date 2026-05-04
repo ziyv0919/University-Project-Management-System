@@ -58,6 +58,14 @@
 						</el-input>
 					</el-form-item>
 
+<!-- 密码强度提示：使用 el-progress 显示强度百分比，根据密码复杂度显示不同颜色和文字（弱/中/强） -->
+					<el-form-item label="密码强度">
+						<el-progress :percentage="passwordStrength" :color="passwordStrengthColor" show-text>
+							<span>{{ passwordStrengthText }}</span>
+						</el-progress>
+					</el-form-item>
+
+
 					<!-- Confirm Password -->
 					<el-form-item prop="confirmPassword" label="确认密码">
 						<el-input
@@ -67,6 +75,7 @@
 							size="large"
 							show-password
 							class="rounded-md"
+
 						>
 							<template #prefix>
 								<el-icon><Lock /></el-icon>
@@ -134,6 +143,32 @@ const validatePass2 = (_: any, value: string, callback: any) => {
 		callback();
 	}
 };
+
+// 密码强度校验：监听 registerForm.uPassword，计算分数 0-100，根据分数返回百分比、颜色和文字（弱/中/强）
+const passwordStrength = computed(() => {
+	const password = registerForm.uPassword;
+	let score = 0;
+
+	if (password.length >= 6) score += 20;
+	if (password.length >= 10) score += 20;
+	if (/[A-Z]/.test(password)) score += 20;
+	if (/[a-z]/.test(password)) score += 20;
+	if (/\d/.test(password)) score += 20;
+
+	return score;
+});
+// 使用 watch 和 ref 实现
+const passwordStrengthColor = computed(() => {
+	if (passwordStrength.value < 40) return 'red';
+	if (passwordStrength.value < 80) return 'orange';
+	return 'green';
+});
+const passwordStrengthText = computed(() => {
+	if (passwordStrength.value < 40) return '弱';
+	if (passwordStrength.value < 80) return '中';
+	return '强';
+});
+
 
 const registerRules = reactive<FormRules>({
 	uRole: [{ required: true, message: '请选择用户类型', trigger: 'change' }],
