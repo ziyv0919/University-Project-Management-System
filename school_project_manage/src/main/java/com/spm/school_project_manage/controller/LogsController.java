@@ -40,7 +40,27 @@ public class LogsController extends BaseController {
             writeJsonResponse(resp, result);
         }
     }
-
+        /**
+     * 按条件筛选日志
+     */
+    protected void filter(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        JsonNode jsonNode = parseRequestBody(req);
+        String operator = getStringParam(jsonNode, "operator");
+        String operationType = getStringParam(jsonNode, "operationType");
+        String startTime = getStringParam(jsonNode, "startTime");
+        String endTime = getStringParam(jsonNode, "endTime");
+        String keyword = getStringParam(jsonNode, "keyword");
+        String pageIndex = getStringParam(jsonNode, "pageIndex");
+        String pageSize = getStringParam(jsonNode, "pageSize");
+        
+        if(!validateRequiredParams(pageIndex, pageSize)) {
+            writeJsonResponse(resp, Result.error("请求参数错误"));
+        } else {
+            setupRequestAndResponse(req, resp);
+            Result<PageResult<List<LogsPageVo>>> result = logsServiceImpl.filter(operator, operationType, startTime, endTime, keyword, pageIndex, pageSize);
+            writeJsonResponse(resp, result);
+        }
+    }
     /**
      * 根据ID查询日志
      */

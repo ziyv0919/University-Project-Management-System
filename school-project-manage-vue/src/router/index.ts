@@ -17,6 +17,7 @@ export const routes: RouteRecordRaw[] = [
 			transition: 'fade',
 		},
 	},
+		
 	{
 		path: '/register',
 		component: () => import('@/views/register/index.vue'),
@@ -253,6 +254,11 @@ export const routes: RouteRecordRaw[] = [
 		path: '/:pathMatch(.*)*',
 		redirect: '/404',
 	},
+	{
+  path: '/logs',
+  name: 'Logs',
+  component: () => import('@/views/logs/index.vue')
+	}
 ];
 
 export const getKeepAliveRoutes = (routes: RouteRecordRaw[]) => {
