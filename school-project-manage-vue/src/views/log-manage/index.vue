@@ -83,7 +83,147 @@
 		</el-dialog>
 	</div>
 </template>
+<template>
+  <div class="log-filter">
+    <!-- 筛选表单 -->
+    <el-form :inline="true" :model="filterForm" class="filter-form">
+      <el-form-item label="操作人">
+        <el-input v-model="filterForm.operator" placeholder="请输入操作人" clearable />
+      </el-form-item>
+      <el-form-item label="操作类型">
+        <el-select v-model="filterForm.operationType" placeholder="请选择" clearable>
+          <el-option label="登录" value="login" />
+          <el-option label="查询" value="query" />
+          <el-option label="新增" value="insert" />
+          <el-option label="修改" value="update" />
+          <el-option label="删除" value="delete" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="时间范围">
+        <el-date-picker
+          v-model="dateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+        />
+      </el-form-item>
+      <el-form-item label="关键词">
+        <el-input v-model="filterForm.keyword" placeholder="搜索日志内容" clearable />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="searchLogs">查询</el-button>
+        <el-button @click="resetForm">重置</el-button>
+      </el-form-item>
+    </el-form>
 
+    <!-- 日志表格 -->
+    <el-table :data="tableData" border stripe v-loading="loading">
+      <el-table-column prop="logId" label="日志ID" width="80" />
+      <el-table-column prop="uName" label="操作人" width="120" />
+      <el-table-column prop="requestUrl" label="操作类型" width="150" />
+      <el-table-column prop="content" label="日志内容" min-width="300" show-overflow-tooltip />
+      <el-table-column prop="createTime" label="操作时间" width="180" />
+    </el-table>
+
+    <!-- 分页 -->
+    <el-pagination
+      v-model:current-page="pageIndex"
+      v-model:page-size="pageSize"
+      :total="total"
+      :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import axios from 'axios'
+
+// 筛选表单
+const filterForm = reactive({
+  operator: '',
+  operationType: '',
+  keyword: ''
+})
+
+const dateRange = ref<string[]>([])
+
+// 表格数据
+const tableData = ref<any[]>([])
+const total = ref(0)
+const pageIndex = ref(1)
+const pageSize = ref(10)
+const loading = ref(false)
+
+// 搜索日志
+const searchLogs = async () => {
+  loading.value = true
+  try {
+    const params = {
+      operator: filterForm.operator,
+      operationType: filterForm.operationType,
+      startTime: dateRange.value?.[0] || '',
+      endTime: dateRange.value?.[1] || '',
+      keyword: filterForm.keyword,
+      pageIndex: pageIndex.value.toString(),
+      pageSize: pageSize.value.toString()
+    }
+    const res = await axios.post('/api/logs/filter', params)
+    if (res.data.code === 200) {
+      tableData.value = res.data.data?.list || []
+      total.value = res.data.data?.total || 0
+    } else {
+      ElMessage.error(res.data.msg || '查询失败')
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('请求失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 重置表单
+const resetForm = () => {
+  filterForm.operator = ''
+  filterForm.operationType = ''
+  filterForm.keyword = ''
+  dateRange.value = []
+  pageIndex.value = 1
+  pageSize.value = 10
+  searchLogs()
+}
+
+// 分页变化
+const handleSizeChange = (val: number) => {
+  pageSize.value = val
+  searchLogs()
+}
+
+const handleCurrentChange = (val: number) => {
+  pageIndex.value = val
+  searchLogs()
+}
+
+// 初始化加载
+searchLogs()
+</script>
+
+<style scoped>
+.log-filter {
+  padding: 20px;
+}
+.filter-form {
+  margin-bottom: 20px;
+}
+</style>
 <script setup lang="ts">
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
