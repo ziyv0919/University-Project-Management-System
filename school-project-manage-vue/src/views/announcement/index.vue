@@ -290,10 +290,12 @@ function filterEmptyParams(params: Record<string, any>) {
 	}
 	return filteredParams;
 }
-// 格式化日期显示函数，将日期字符串转换为 YYYY-MM-DD HH:mm:ss 格式
 
-
-
+// 格式化日期函数，将日期字符串转换为本地时间格式，空值返回空字符串
+const formatDate = (date: string) => {
+	if (!date) return '';
+	return new Date(date).toLocaleString('zh-CN');
+};	
 
 function handleAction(action: string, row: any) {
 	switch (action) {
